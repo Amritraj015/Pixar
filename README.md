@@ -61,7 +61,7 @@ A tiny graphics library for coloring pixels.
         }
     }
 
-    Px::Errno eerr = Px::save_as_ppm(surface, circlesFileName);
+    Px::Errno err = Px::save_as_ppm(surface, circlesFileName);
 ```
 
 ![Circles](./examples/circles.png)
