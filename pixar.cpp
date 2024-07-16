@@ -1,29 +1,11 @@
-#include <cstdio>
 #include <errno.h>
-#include <cstdint>
+#include "types/rectangle.h"
+#include "types/circle.h"
+#include "types/line.h"
+#include "types/surface.h"
 
 namespace Px {
     typedef int Errno;
-    struct Rectangle {
-        public:
-            uint32_t *pixels;
-            size_t pixels_width;
-            size_t pixels_height;
-            size_t rect_width;
-            size_t rect_height;
-            size_t x_coordinate;
-            size_t y_coordinate;
-    };
-
-    struct Circle {
-        public:
-            uint32_t *pixels;
-            size_t pixels_width;
-            size_t pixels_height;
-            size_t radius;
-            size_t x_coordinate;
-            size_t y_coordinate;
-    };
 
 #define RETURN_DEFER(value)                                                                                                                \
     {                                                                                                                                      \
@@ -31,52 +13,61 @@ namespace Px {
         goto defer;                                                                                                                        \
     }
 
-    void fill(uint32_t *pixels, size_t width, size_t height, uint32_t color) {
-        for (size_t i = 0; i < width * height; ++i) {
-            pixels[i] = color;
+    void draw_line(Surface *surface, Line *line, uint32_t color) {
+        float slope = (line->y2 - line->y1) / (line->x2 - line->x1);
+        // float constant =
+
+        for (int y = 0; y < surface->height; y++) {
+            for (int x = 0; x < surface->width; x++) {
+                // if (y == slope)
+            }
         }
     }
 
-    void fill_circle(Circle *circle, uint32_t color) {
-        // if (radius >= width || radius >= height) radius = width > height ? height / 2 : width / 2;
+    void fill(Surface *surface, uint32_t color) {
+        for (size_t i = 0; i < surface->width * surface->height; ++i) {
+            surface->pixels[i] = color;
+        }
+    }
 
+    void fill_circle(Surface *surface, Circle *circle, uint32_t color) {
         int radius_sq = circle->radius * circle->radius;
 
-        for (int y = 0; y < circle->pixels_height; y++) {
-            for (int x = 0; x < circle->pixels_width; x++) {
-                int x_sq = (circle->x_coordinate - x) * (circle->x_coordinate - x);
-                int y_sq = (circle->y_coordinate - y) * (circle->y_coordinate - y);
+        for (int y = 0; y < surface->height; y++) {
+            for (int x = 0; x < surface->width; x++) {
+                int x_sq = (circle->x - x) * (circle->x - x);
+                int y_sq = (circle->y - y) * (circle->y - y);
 
                 if (x_sq + y_sq <= radius_sq) {
-                    circle->pixels[x + y * circle->pixels_width] = color;
+                    surface->pixels[x + y * surface->width] = color;
                 }
             }
         }
     }
 
-    void fill_rectangle(Rectangle *rect, uint32_t color) {
+    void fill_rectangle(Surface *surface, Rectangle *rect, uint32_t color) {
         // If the X coordinate of the top left corner of the rectangle
         // is out of bounds of the surface then, start drawing at X = 0.
-        if (rect->x_coordinate < 0 || rect->x_coordinate >= rect->pixels_width) rect->x_coordinate = 0;
+        if (rect->x < 0 || rect->x >= surface->width) rect->x = 0;
 
         // If the Y coordinate of the top left corner of the rectangle
         // is out of bounds of the surface then, start drawing at Y = 0.
-        if (rect->y_coordinate < 0 || rect->y_coordinate >= rect->pixels_height) rect->y_coordinate = 0;
+        if (rect->y < 0 || rect->y >= surface->height) rect->y = 0;
 
-        int x_max = rect->rect_width + rect->x_coordinate;
-        int y_max = rect->rect_height + rect->y_coordinate;
+        int x_max = rect->width + rect->x;
+        int y_max = rect->height + rect->y;
 
-        if (x_max > rect->pixels_width) x_max = rect->pixels_width;
-        if (y_max > rect->pixels_height) y_max = rect->pixels_height;
+        if (x_max > surface->width) x_max = surface->width;
+        if (y_max > surface->height) y_max = surface->height;
 
-        for (int y = rect->y_coordinate; y < y_max; y++) {
-            for (int x = rect->x_coordinate; x < x_max; x++) {
-                rect->pixels[x + y * rect->pixels_width] = color;
+        for (int y = rect->y; y < y_max; y++) {
+            for (int x = rect->x; x < x_max; x++) {
+                surface->pixels[x + y * surface->width] = color;
             }
         }
     }
 
-    Errno save_as_ppm(uint32_t *pixels, size_t width, size_t height, const char *filePath) {
+    Errno save_as_ppm(Surface *surface, const char *filePath) {
         int result = 0;
         FILE *file = NULL;
 
@@ -88,18 +79,18 @@ namespace Px {
             if (file == NULL) RETURN_DEFER(errno)
 
             // Write the required PPM header to the file.
-            fprintf(file, "P6\n%zu %zu 255\n", width, height);
+            fprintf(file, "P6\n%zu %zu 255\n", surface->width, surface->height);
 
             // If the header could not be written, the return with an error.
             if (ferror(file)) RETURN_DEFER(errno)
 
-            for (size_t i = 0; i < width * height; ++i) {
+            for (size_t i = 0; i < surface->width * surface->height; ++i) {
                 // In hexadecimal ARGB is represented as 0xAABBGGRR.
                 // PPM file format does not support Alpha values.
                 // Hence, we need to right shift each pixel by 0, 8 and 16
                 // bits to extract Red, Green and Blue pixels respectively.
 
-                uint32_t pixel = pixels[i];
+                uint32_t pixel = surface->pixels[i];
 
                 // Extract the Red, Green and Blue bytes from the pixel color.
                 uint8_t bytes[3] = {
