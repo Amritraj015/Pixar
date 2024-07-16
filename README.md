@@ -16,8 +16,8 @@ A tiny graphics library for coloring pixels.
 
 ### Rectangles
 
-![Rectangles](./examples/rectangles.ppm)
+![Rectangles](./examples/rectangles.png)
 
 ### Circles
 
-![Circles](./examples/circles.ppm)
+![Circles](./examples/circles.png)
