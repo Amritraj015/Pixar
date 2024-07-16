@@ -16,7 +16,7 @@ A tiny graphics library for coloring pixels.
 
 ### Rectangles
 
-```c++
+```cpp
     size_t width = 800, height = 800;
     const char *rectanglesFileName = "rectangles.ppm";
 
@@ -42,7 +42,7 @@ A tiny graphics library for coloring pixels.
 
 ### Circles
 
-```c++
+```cpp
     size_t width = 800, height = 800;
     const char *circlesFileName = "circles.ppm";
 
