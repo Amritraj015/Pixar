@@ -5,7 +5,8 @@ int main() {
     size_t width = 800;
     size_t height = 800;
     uint32_t pixels[width * height];
-    const char *fileName = "dist/output.ppm";
+    const char *rectanglesFileName = "rectangles.ppm";
+    const char *circlesFileName = "circles.ppm";
 
     Px::fill(pixels, width, height, 0x00FFBCBC);
     Px::Rectangle rect = {
@@ -33,11 +34,33 @@ int main() {
     rect.y_coordinate = 300;
 
     Px::fill_rectangle(&rect, 0x00FF00FF);
+    Px::Errno err = Px::save_as_ppm(pixels, width, height, rectanglesFileName);
 
-    Px::Errno err = Px::save_as_ppm(pixels, width, height, fileName);
+    Px::fill(pixels, width, height, 0x00000000);
+    Px::Circle circle = {
+        .pixels = pixels,
+        .pixels_width = width,
+        .pixels_height = height,
+        .radius = 10,
+        .x_coordinate = 0,
+        .y_coordinate = 0,
+    };
+
+    for (int x = 0; x < width; x += 100) {
+        circle.x_coordinate = x + 50;
+        circle.radius = circle.radius + 5;
+
+        for (int y = 0; y < height; y += 100) {
+            circle.y_coordinate = y + 50;
+
+            Px::fill_circle(&circle, 0x0000FF00);
+        }
+    }
+
+    err = Px::save_as_ppm(pixels, width, height, circlesFileName);
 
     if (err) {
-        printf("Could not save file %s, %s\n", fileName, strerror(err));
+        printf("Could not save file %s, %s\n", rectanglesFileName, strerror(err));
         return 1;
     }
 
