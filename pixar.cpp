@@ -19,14 +19,10 @@ namespace Px {
         float slope = (line->y2 - line->y1) / (line->x2 - line->x1);
         float constant = line->y1 - (slope * line->x1);
 
-        printf("slope (%.7f)\n", slope);
         int startX = line->x1 > line->x2 ? line->x2 : line->x1;
         int startY = line->y1 > line->y2 ? line->y2 : line->y1;
         int endX = line->x1 > line->x2 ? line->x1 : line->x2;
         int endY = line->y1 > line->y2 ? line->y1 : line->y2;
-
-        printf("Start (%i, %i)\n", startX, startY);
-        printf("End (%i, %i)\n", endX, endY);
 
         if (isVerticalLine) {
             for (int y = startY; y <= endY; y++) {
