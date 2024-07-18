@@ -1,15 +1,19 @@
 A tiny graphics library for coloring pixels.
 
-## Run the following command to build the library.
+## Build
+
+To build the library, simply run the following command:
 
 ```
 ./build.sh
 ```
 
-## You can run the example with the following command.
+## Run Examples
+
+You can run the example with the following command.
 
 ```
-./dist/main
+cd dist && ./main
 ```
 
 ## Examples
