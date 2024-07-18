@@ -14,12 +14,39 @@ namespace Px {
     }
 
     void draw_line(Surface *surface, Line *line, uint32_t color) {
-        float slope = (line->y2 - line->y1) / (line->x2 - line->x1);
-        // float constant =
+        bool isVerticalLine = line->x1 == line->x2;
 
-        for (int y = 0; y < surface->height; y++) {
-            for (int x = 0; x < surface->width; x++) {
-                // if (y == slope)
+        float slope = (line->y2 - line->y1) / (line->x2 - line->x1);
+        float constant = line->y1 - (slope * line->x1);
+
+        printf("slope (%.7f)\n", slope);
+        int startX = line->x1 > line->x2 ? line->x2 : line->x1;
+        int startY = line->y1 > line->y2 ? line->y2 : line->y1;
+        int endX = line->x1 > line->x2 ? line->x1 : line->x2;
+        int endY = line->y1 > line->y2 ? line->y1 : line->y2;
+
+        printf("Start (%i, %i)\n", startX, startY);
+        printf("End (%i, %i)\n", endX, endY);
+
+        if (isVerticalLine) {
+            for (int y = startY; y <= endY; y++) {
+                for (int x = startX; x <= endX; x++) {
+                    surface->pixels[x + y * surface->width] = color;
+                }
+            }
+        } else {
+            for (int y = startY; y <= endY; y++) {
+                for (int x = startX; x <= endX; x++) {
+                    if (isVerticalLine) {
+                        surface->pixels[x + y * surface->width] = color;
+                    } else {
+                        int equation = y - (slope * x) - constant;
+
+                        if (equation == 0) {
+                            surface->pixels[x + y * surface->width] = color;
+                        }
+                    }
+                }
             }
         }
     }

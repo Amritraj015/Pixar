@@ -5,6 +5,7 @@ int main() {
     size_t width = 800, height = 800;
     const char *rectanglesFileName = "rectangles.ppm";
     const char *circlesFileName = "circles.ppm";
+    const char *lineFileName = "lines.ppm";
 
     Px::Surface *surface = Px::Surface::create(width, height);
     Px::fill(surface, 0x00FFBCBC);
@@ -38,6 +39,31 @@ int main() {
     }
 
     err = Px::save_as_ppm(surface, circlesFileName);
+
+    Px::fill(surface, 0x00000000);
+    Px::Line line = { .x1 = 0, .y1 = 200, .x2 = 799, .y2 = 200 };
+    Px::draw_line(surface, &line, 0x00FF0000);
+
+    line.y1 = line.y2 = 600;
+    Px::draw_line(surface, &line, 0x0000FF00);
+
+    line.y1 = 0;
+    line.y2 = 799;
+    line.x1 = line.x2 = 200;
+    Px::draw_line(surface, &line, 0x00A000FF);
+
+    line.x1 = line.x2 = 600;
+    Px::draw_line(surface, &line, 0x00F0FF0F);
+
+    line.x1 = line.y1 = 0;
+    line.x2 = line.y2 = 799;
+    Px::draw_line(surface, &line, 0x00FFFFFF);
+
+    line.x1 = line.y2 = 799;
+    line.x2 = line.y1 = 0;
+    Px::draw_line(surface, &line, 0x00FFFFFF);
+
+    err = Px::save_as_ppm(surface, lineFileName);
 
     if (err) {
         printf("Could not save file %s, %s\n", rectanglesFileName, strerror(err));
