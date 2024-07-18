@@ -10,7 +10,7 @@ To build the library, simply run the following command:
 
 ## Run Examples
 
-You can run the example with the following command.
+You can run the example with the following command:
 
 ```
 cd dist && ./main
