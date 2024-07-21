@@ -19,18 +19,29 @@ namespace Px {
         goto defer;                                                                                                                        \
     }
 
+    /** A class to represent a surface which can be drawn on. */
     class Surface {
         public:
-            size_t width, height;
+            /** Width of the current surface. */
+            size_t width;
+
+            /** Height of the current surface. */
+            size_t height;
+
+            /** Pixels to represent the surface. */
             uint32_t **pixels;
 
+            /**
+             * Creates a new surface.
+             * @param width - Width of the surface in pixels.
+             * @param height - Height of the surface in pixels.
+             * */
             static Surface *create(size_t width, size_t height) {
                 return new Surface(width, height);
             }
 
             /**
              * Colors all pixels of the provided surface with a given color.
-             * @param surface - A pointer to the surface.
              * @param color - A color to apply to all pixels.
              * */
             void apply_color(uint32_t color) {
@@ -41,6 +52,11 @@ namespace Px {
                 }
             }
 
+            /**
+             * Draws a rectangle on the surface.
+             * @param rect - Rectangle information to be drawn.
+             * @param color - Color to apply to the rectangle.
+             * */
             void draw_rectangle(Rectangle *rect, uint32_t color) {
                 // If the X coordinate of the top left corner of the rectangle
                 // is out of bounds of the surface then, start drawing at X = 0.
@@ -67,14 +83,23 @@ namespace Px {
                 }
             }
 
+            /**
+             * Draws a circle on the surface.
+             * @param circle - Information about the circle to be drawn.
+             * @param color - Color to apply to the circle.
+             * */
             void draw_circle(Circle *circle, uint32_t color) {
+                // Calculate the square of the radius of the circle.
                 int radius_sq = circle->radius * circle->radius;
 
                 for (int y = 0; y < this->height; y++) {
                     for (int x = 0; x < this->width; x++) {
+                        // Find if the current point lies inside of the circle.
                         int x_sq = (circle->x - x) * (circle->x - x);
                         int y_sq = (circle->y - y) * (circle->y - y);
 
+                        // If the point lies inside of the circle,
+                        // then apply the required color to it.
                         if (x_sq + y_sq <= radius_sq) {
                             this->pixels[x][y] = color;
                         }
@@ -82,6 +107,11 @@ namespace Px {
                 }
             }
 
+            /**
+             * Draws a line on the surface.
+             * @param line - Information about the line to be drawn.
+             * @param color - Color for the line to be drawn.
+             * */
             void draw_line(Line *line, uint32_t color) {
                 bool isVerticalLine = line->x1 == line->x2;
 
@@ -135,6 +165,10 @@ namespace Px {
                 }
             }
 
+            /**
+             * Saves the current state of the surface as a PPM file.
+             * @param filePath - Destination path where to save the PPM file.
+             * */
             Errno save_as_ppm(const char *filePath) {
                 int result = 0;
                 FILE *file = NULL;
@@ -182,6 +216,9 @@ namespace Px {
                 return result;
             }
 
+            /**
+             * Destructor that cleans up the surface.
+             * */
             ~Surface() {
                 if (nullptr != this->pixels) {
                     for (int i = 0; i < width; i++) {
@@ -194,7 +231,12 @@ namespace Px {
             };
 
         private:
-            Surface(size_t width, size_t height) : width{ width }, height{ height } {
+            /**
+             * Creates a new instance of `Surface`.
+             * @param width - Width of the surface to created.
+             * @prarm height - Height of the surface to be created.
+             * */
+            Surface(size_t width, size_t height) {
                 this->width = width;
                 this->height = height;
                 this->pixels = new uint32_t *[width];
