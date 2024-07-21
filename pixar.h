@@ -54,21 +54,21 @@ namespace Px {
 
             /**
              * Draws a rectangle on the surface.
-             * @param rect - Rectangle information to be drawn.
+             * @param rectangle - Rectangle information to be drawn.
              * @param color - Color to apply to the rectangle.
              * */
-            void draw_rectangle(Rectangle *rect, uint32_t color) {
+            void draw_rectangle(Rectangle *rectangle, uint32_t color) {
                 // If the X coordinate of the top left corner of the rectangle
                 // is out of bounds of the surface then, start drawing at X = 0.
-                if (rect->x < 0 || rect->x >= this->width) rect->x = 0;
+                if (rectangle->x < 0 || rectangle->x >= this->width) rectangle->x = 0;
 
                 // If the Y coordinate of the top left corner of the rectangle
                 // is out of bounds of the surface then, start drawing at Y = 0.
-                if (rect->y < 0 || rect->y >= this->height) rect->y = 0;
+                if (rectangle->y < 0 || rectangle->y >= this->height) rectangle->y = 0;
 
                 // Calculate X and Y bounds.
-                int x_max = rect->width + rect->x;
-                int y_max = rect->height + rect->y;
+                int x_max = rectangle->width + rectangle->x;
+                int y_max = rectangle->height + rectangle->y;
 
                 // If X and Y bounds lie outside of the surface,
                 // then set them to the "width" and "height" of the surface respectively.
@@ -76,8 +76,8 @@ namespace Px {
                 if (y_max > this->height) y_max = this->height;
 
                 // Color the pixels.
-                for (int y = rect->y; y < y_max; y++) {
-                    for (int x = rect->x; x < x_max; x++) {
+                for (int y = rectangle->y; y < y_max; y++) {
+                    for (int x = rectangle->x; x < x_max; x++) {
                         this->pixels[x][y] = color;
                     }
                 }
