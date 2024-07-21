@@ -12,6 +12,7 @@
 namespace Px {
     typedef int Errno;
 
+// A macro to return an error if file operations fail.
 #define RETURN_DEFER(value)                                                                                                                \
     {                                                                                                                                      \
         result = value;                                                                                                                    \
@@ -21,13 +22,10 @@ namespace Px {
     class Surface {
         public:
             size_t width, height;
-            uint32_t *pixels;
+            uint32_t **pixels;
 
             static Surface *create(size_t width, size_t height) {
-                uint32_t pixels[width * height];
-                Surface *surface = new Surface(width, height);
-
-                return surface;
+                return new Surface(width, height);
             }
 
             /**
@@ -36,7 +34,11 @@ namespace Px {
              * @param color - A color to apply to all pixels.
              * */
             void apply_color(uint32_t color) {
-                memset(this->pixels, color, this->width * this->height * sizeof(uint32_t));
+                for (size_t i = 0; i < this->width; ++i) {
+                    for (size_t j = 0; j < this->height; ++j) {
+                        this->pixels[i][j] = color;
+                    }
+                }
             }
 
             void draw_rectangle(Rectangle *rect, uint32_t color) {
@@ -60,7 +62,7 @@ namespace Px {
                 // Color the pixels.
                 for (int y = rect->y; y < y_max; y++) {
                     for (int x = rect->x; x < x_max; x++) {
-                        this->pixels[x + y * this->width] = color;
+                        this->pixels[x][y] = color;
                     }
                 }
             }
@@ -74,7 +76,7 @@ namespace Px {
                         int y_sq = (circle->y - y) * (circle->y - y);
 
                         if (x_sq + y_sq <= radius_sq) {
-                            this->pixels[x + y * this->width] = color;
+                            this->pixels[x][y] = color;
                         }
                     }
                 }
@@ -112,7 +114,7 @@ namespace Px {
                 if (isVerticalLine) {
                     for (int y = startY; y <= endY; y++) {
                         for (int x = startX; x <= endX; x++) {
-                            this->pixels[x + y * this->width] = color;
+                            this->pixels[x][y] = color;
                         }
                     }
                 } else {
@@ -126,7 +128,7 @@ namespace Px {
                             // then this point lies on the line.
                             if (equation == 0) {
                                 // Color the pixel.
-                                this->pixels[x + y * this->width] = color;
+                                this->pixels[x][y] = color;
                             }
                         }
                     }
@@ -150,26 +152,28 @@ namespace Px {
                     // If the header could not be written, the return with an error.
                     if (ferror(file)) RETURN_DEFER(errno)
 
-                    for (size_t i = 0; i < this->width * this->height; ++i) {
-                        // In hexadecimal ARGB is represented as 0xAABBGGRR.
-                        // PPM file format does not support Alpha values.
-                        // Hence, we need to right shift each pixel by 0, 8 and 16
-                        // bits to extract Red, Green and Blue pixels respectively.
+                    for (size_t i = 0; i < this->width; ++i) {
+                        for (size_t j = 0; j < this->height; ++j) {
+                            // In hexadecimal ARGB is represented as 0xAABBGGRR.
+                            // PPM file format does not support Alpha values.
+                            // Hence, we need to right shift each pixel by 0, 8 and 16
+                            // bits to extract Red, Green and Blue pixels respectively.
 
-                        uint32_t pixel = this->pixels[i];
+                            uint32_t pixel = this->pixels[i][j];
 
-                        // Extract the Red, Green and Blue bytes from the pixel color.
-                        uint8_t bytes[3] = {
-                            (uint8_t)((pixel >> (8 * 0)) & 0xFF),
-                            (uint8_t)((pixel >> (8 * 1)) & 0xFF),
-                            (uint8_t)((pixel >> (8 * 2)) & 0xFF),
-                        };
+                            // Extract the Red, Green and Blue bytes from the pixel color.
+                            uint8_t bytes[3] = {
+                                (uint8_t)((pixel >> (8 * 0)) & 0xFF),
+                                (uint8_t)((pixel >> (8 * 1)) & 0xFF),
+                                (uint8_t)((pixel >> (8 * 2)) & 0xFF),
+                            };
 
-                        // Try writing these bytes to the file.
-                        fwrite(bytes, sizeof(bytes), 1, file);
+                            // Try writing these bytes to the file.
+                            fwrite(bytes, sizeof(bytes), 1, file);
 
-                        // If writing failed then, return with an error.
-                        if (ferror(file)) RETURN_DEFER(errno)
+                            // If writing failed then, return with an error.
+                            if (ferror(file)) RETURN_DEFER(errno)
+                        }
                     }
                 }
 
@@ -179,11 +183,25 @@ namespace Px {
             }
 
             ~Surface() {
-                delete[] pixels;
-                pixels = nullptr;
+                if (nullptr != this->pixels) {
+                    for (int i = 0; i < width; i++) {
+                        delete[] this->pixels[i];
+                    }
+
+                    delete[] pixels;
+                    pixels = nullptr;
+                }
             };
 
         private:
-            Surface(size_t width, size_t height) : width{ width }, height{ height }, pixels{ new uint32_t[width * height] } {};
+            Surface(size_t width, size_t height) : width{ width }, height{ height } {
+                this->width = width;
+                this->height = height;
+                this->pixels = new uint32_t *[width];
+
+                for (int i = 0; i < width; i++) {
+                    this->pixels[i] = new uint32_t[height];
+                }
+            };
     };
 } // namespace Px
